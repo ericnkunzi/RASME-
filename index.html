@@ -9,6 +9,7 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-oH+mPpWtD2R3A3hCxvw7yyIBr0tKxDg+P6PrjxZz9uo="
     crossorigin=""
   />
   <style>
@@ -163,6 +164,7 @@
   <!-- Leaflet JS -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o5N2gPjQJi2F6K0BzDTK9cXG56p5U9KwQyJ3g0KqFEE="
     crossorigin=""
   ></script>
 
@@ -170,7 +172,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // Use your Render backend API URL here:
+    // Your backend API URL serving KoboToolbox data in JSON format
     const API_URL = "https://rasmeplus-backend.onrender.com/data";
 
     // Initialize Leaflet map centered on Rwanda
@@ -273,21 +275,4 @@
       const counts = {};
       data.forEach((item) => {
         const c = item.collector || "Unknown";
-        counts[c] = (counts[c] || 0) + 1;
-      });
-
-      // Convert to array and sort descending
-      const sorted = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
-      return sorted; // [ [collector, count], ... ]
-    }
-
-    // Render collector leaderboard table
-    function renderCollectorTable(topCollectors) {
-      const tbody = document.getElementById("collectorTableBody");
-      tbody.innerHTML = "";
-      topCollectors.forEach(([collector, count], index) => {
-        const tr = document.createElement("tr");
-       
+        counts[c] = (counts[c] || 0)
