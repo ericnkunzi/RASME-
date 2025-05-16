@@ -4,282 +4,330 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>RASME+ Dashboard</title>
-  <!-- Leaflet CSS -->
+
+  <!-- Leaflet CSS for map -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-oH+mPpWtD2R3A3hCxvw7yyIBr0tKxDg+P6PrjxZz9uo="
     crossorigin=""
   />
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f4f6f8;
+      margin: 10px;
+      background: #f9f9f9;
     }
-    header {
-      background-color: #004c97;
-      color: white;
-      padding: 1rem;
+
+    h1 {
       text-align: center;
-      font-size: 1.5rem;
-      font-weight: bold;
+      margin-bottom: 20px;
     }
+
     #map {
       height: 400px;
-      margin: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 0 auto 30px auto;
+      border: 2px solid #333;
+      border-radius: 5px;
     }
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      padding: 0 1rem 2rem 1rem;
+
+    .sector-bars {
+      max-width: 900px;
+      margin: 0 auto 30px auto;
     }
-    .stats, .leaderboard, .charts {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-    h2 {
-      margin-top: 0;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    table th, table td {
-      padding: 0.5rem;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    table tr:hover {
-      background-color: #f0f8ff;
-    }
+
     .sector-bar {
-      height: 25px;
-      background-color: #ddd;
-      border-radius: 12px;
-      margin: 0.5rem 0;
-      overflow: hidden;
+      margin: 10px 0;
+      font-weight: bold;
     }
-    .sector-fill {
+
+    .bar-container {
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 25px;
+    }
+
+    .bar-fill {
       height: 100%;
-      border-radius: 12px;
+      text-align: right;
+      padding-right: 10px;
       color: white;
-      padding-left: 0.5rem;
       line-height: 25px;
       font-weight: bold;
+    }
+
+    .sector-water {
+      background-color: #007bff; /* Blue */
+    }
+
+    .sector-energy {
+      background-color: #ffc107; /* Amber */
+      color: black;
+    }
+
+    .sector-transport {
+      background-color: #28a745; /* Green */
+    }
+
+    .sector-others {
+      background-color: #6c757d; /* Gray */
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 0 auto 30px auto;
+      max-width: 900px;
+      width: 100%;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 5px #aaa;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #333;
+      color: white;
+    }
+
+    #timelineChart {
+      max-width: 900px;
+      margin: 0 auto 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #aaa;
+    }
+
+    footer {
+      text-align: center;
+      color: #666;
+      margin-top: 40px;
+      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
-  <header>RASME+ Dashboard - African Development Bank Rwanda</header>
+  <h1>RASME+ Dashboard - Rwanda Projects Monitoring</h1>
 
-  <div class="container">
-    <div id="map"></div>
+  <div id="map"></div>
 
-    <div class="stats">
-      <h2>Sector Submission Percentages</h2>
-      <div id="sector-stats">
-        <!-- Bars will be inserted here -->
-      </div>
+  <div class="sector-bars">
+    <div class="sector-bar sector-water">Water & Sanitation: <span id="waterPercent">0%</span></div>
+    <div class="bar-container">
+      <div id="waterBar" class="bar-fill sector-water" style="width: 0%"></div>
     </div>
 
-    <div class="charts">
-      <h2>Submission Timeline (Last 30 days)</h2>
-      <canvas id="timelineChart"></canvas>
+    <div class="sector-bar sector-energy">Energy: <span id="energyPercent">0%</span></div>
+    <div class="bar-container">
+      <div id="energyBar" class="bar-fill sector-energy" style="width: 0%"></div>
     </div>
 
-    <div class="leaderboard">
-      <h2>Top Data Collectors</h2>
-      <table id="collectorTable">
-        <thead>
-          <tr>
-            <th>Collector</th>
-            <th>Submissions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Rows inserted here -->
-        </tbody>
-      </table>
+    <div class="sector-bar sector-transport">Transport: <span id="transportPercent">0%</span></div>
+    <div class="bar-container">
+      <div id="transportBar" class="bar-fill sector-transport" style="width: 0%"></div>
+    </div>
+
+    <div class="sector-bar sector-others">Others: <span id="othersPercent">0%</span></div>
+    <div class="bar-container">
+      <div id="othersBar" class="bar-fill sector-others" style="width: 0%"></div>
     </div>
   </div>
+
+  <h2 style="text-align:center;">Top Data Collectors (by submissions)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Data Collector</th>
+        <th>Submissions</th>
+      </tr>
+    </thead>
+    <tbody id="collectorTableBody">
+      <!-- Filled by JavaScript -->
+    </tbody>
+  </table>
+
+  <h2 style="text-align:center;">Submissions Timeline (Last 30 days)</h2>
+  <canvas id="timelineChart" height="150"></canvas>
+
+  <footer>
+    &copy; African Development Bank - RASME+ Dashboard
+  </footer>
 
   <!-- Leaflet JS -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o5N2gPjQJi2F6K0BzDTK9cXG56p5U9KwQyJ3g0KqFEE="
     crossorigin=""
   ></script>
 
-  <script>
-    // Configuration
-    const API_URL = "https://rasmeplus-backend.onrender.com/data";
+  <!-- Chart.js for timeline chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    // Sector Colors
+  <script>
+    // Your backend API URL serving KoboToolbox data in JSON format
+    const API_URL = "https://your-backend-api-url.com/data";
+
+    // Initialize Leaflet map centered on Rwanda
+    let map;
+    function initMap() {
+      map = L.map("map").setView([-1.9403, 29.8739], 8);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+    }
+
+    // Color per sector
     const sectorColors = {
-      "Water & Sanitation": "#1f77b4",
-      "Energy": "#ff7f0e",
-      "Transport": "#2ca02c",
-      "Others": "#d62728"
+      "Water & Sanitation": "#007bff", // Blue
+      Energy: "#ffc107", // Amber
+      Transport: "#28a745", // Green
+      Others: "#6c757d", // Gray
     };
 
-    let map;
-    let markers = [];
-
-    // Initialize Map
-    function initMap() {
-      map = L.map("map").setView([-1.9403, 29.8739], 7); // Center on Rwanda
-      L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom: 18,
-          attribution:
-            '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }
-      ).addTo(map);
-    }
-
-    // Clear markers from map
-    function clearMarkers() {
-      markers.forEach((m) => map.removeLayer(m));
-      markers = [];
-    }
-
-    // Create colored circle markers per submission
+    // Add circle markers for each submission
     function addMarkers(data) {
-      clearMarkers();
-      data.forEach((d) => {
-        if (d.latitude && d.longitude) {
-          const color = sectorColors[d.sector] || sectorColors["Others"];
-          const marker = L.circleMarker([d.latitude, d.longitude], {
+      if (!map) return;
+      map.eachLayer((layer) => {
+        if (layer instanceof L.CircleMarker) {
+          map.removeLayer(layer);
+        }
+      });
+
+      data.forEach((item) => {
+        // Check coordinates exist and sector is valid
+        if (
+          item.latitude &&
+          item.longitude &&
+          sectorColors[item.sector]
+        ) {
+          const color = sectorColors[item.sector] || "#000000";
+
+          const circle = L.circleMarker([item.latitude, item.longitude], {
             radius: 7,
             fillColor: color,
             color: "#000",
             weight: 1,
             opacity: 1,
             fillOpacity: 0.7,
-          })
-            .bindPopup(`<b>Sector:</b> ${d.sector}<br/><b>Collector:</b> ${d.collector}<br/><b>Date:</b> ${new Date(d.submission_date).toLocaleDateString()}`)
-            .addTo(map);
-          markers.push(marker);
+          }).addTo(map);
+
+          const popupContent = `
+            <b>Sector:</b> ${item.sector}<br/>
+            <b>Collector:</b> ${item.collector}<br/>
+            <b>Date:</b> ${new Date(item.submission_date).toLocaleDateString()}<br/>
+            <b>Score:</b> ${item.score || "N/A"}
+          `;
+          circle.bindPopup(popupContent);
         }
       });
     }
 
-    // Compute sector submission counts & percentages
+    // Compute submission percentages per sector
     function computeSectorStats(data) {
       const counts = {
         "Water & Sanitation": 0,
-        "Energy": 0,
-        "Transport": 0,
-        "Others": 0,
+        Energy: 0,
+        Transport: 0,
+        Others: 0,
       };
-      data.forEach((d) => {
-        const sector = d.sector in counts ? d.sector : "Others";
-        counts[sector]++;
+      data.forEach((item) => {
+        if (counts[item.sector] !== undefined) {
+          counts[item.sector]++;
+        } else {
+          counts["Others"]++;
+        }
       });
-      const total = data.length || 1; // Avoid division by zero
+      const total = data.length || 1;
       const percentages = {};
-      for (const s in counts) {
-        percentages[s] = ((counts[s] / total) * 100).toFixed(1);
-      }
+      Object.keys(counts).forEach((sector) => {
+        percentages[sector] = ((counts[sector] / total) * 100).toFixed(1);
+      });
       return { counts, percentages };
     }
 
-    // Render sector bars
+    // Render sector bars with percentages
     function renderSectorBars(percentages) {
-      const container = document.getElementById("sector-stats");
-      container.innerHTML = "";
-      for (const sector in percentages) {
-        const percent = percentages[sector];
-        const color = sectorColors[sector];
-        const bar = document.createElement("div");
-        bar.className = "sector-bar";
-        const fill = document.createElement("div");
-        fill.className = "sector-fill";
-        fill.style.width = `${percent}%`;
-        fill.style.backgroundColor = color;
-        fill.textContent = `${sector}: ${percent}%`;
-        bar.appendChild(fill);
-        container.appendChild(bar);
-      }
+      document.getElementById("waterPercent").innerText = percentages["Water & Sanitation"] + "%";
+      document.getElementById("waterBar").style.width = percentages["Water & Sanitation"] + "%";
+
+      document.getElementById("energyPercent").innerText = percentages["Energy"] + "%";
+      document.getElementById("energyBar").style.width = percentages["Energy"] + "%";
+
+      document.getElementById("transportPercent").innerText = percentages["Transport"] + "%";
+      document.getElementById("transportBar").style.width = percentages["Transport"] + "%";
+
+      document.getElementById("othersPercent").innerText = percentages["Others"] + "%";
+      document.getElementById("othersBar").style.width = percentages["Others"] + "%";
     }
 
-    // Compute top collectors
+    // Compute top data collectors by number of submissions
     function computeTopCollectors(data) {
       const counts = {};
-      data.forEach((d) => {
-        const c = d.collector || "Unknown";
+      data.forEach((item) => {
+        const c = item.collector || "Unknown";
         counts[c] = (counts[c] || 0) + 1;
       });
+
       // Convert to array and sort descending
-      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-      return sorted;
+      const sorted = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+      return sorted; // [ [collector, count], ... ]
     }
 
-    // Render leaderboard table
-    function renderCollectorTable(sortedCollectors) {
-      const tbody = document.querySelector("#collectorTable tbody");
+    // Render collector leaderboard table
+    function renderCollectorTable(topCollectors) {
+      const tbody = document.getElementById("collectorTableBody");
       tbody.innerHTML = "";
-      sortedCollectors.forEach(([collector, count]) => {
+      topCollectors.forEach(([collector, count], index) => {
         const tr = document.createElement("tr");
-        const tdName = document.createElement("td");
-        tdName.textContent = collector;
-        const tdCount = document.createElement("td");
-        tdCount.textContent = count;
-        tr.appendChild(tdName);
-        tr.appendChild(tdCount);
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${collector}</td>
+          <td>${count}</td>
+        `;
         tbody.appendChild(tr);
       });
     }
 
-    // Prepare timeline chart data (last 30 days)
+    // Prepare timeline data for last 30 days submissions
     function prepareTimelineData(data) {
+      const now = new Date();
       const days = [];
       const counts = [];
-      const now = new Date();
+
       for (let i = 29; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(now.getDate() - i);
-        days.push(day.toISOString().slice(0, 10));
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const dayStr = d.toISOString().slice(0, 10);
+        days.push(dayStr);
         counts.push(0);
       }
-      data.forEach((d) => {
-        const subDate = d.submission_date ? d.submission_date.slice(0, 10) : null;
-        if (subDate && days.includes(subDate)) {
-          const idx = days.indexOf(subDate);
-          counts[idx]++;
+
+      data.forEach((item) => {
+        if (item.submission_date) {
+          const dateStr = item.submission_date.slice(0, 10);
+          const idx = days.indexOf(dateStr);
+          if (idx >= 0) {
+            counts[idx]++;
+          }
         }
       });
+
       return { days, counts };
     }
 
     // Render timeline chart using Chart.js
     let timelineChart;
-    function renderTimelineChart(days, counts) {
-      const ctx = document.getElementById("timelineChart").getContext("2d");
-      if (timelineChart) {
-        timelineChart.destroy();
-      }
-      timelineChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: days,
-          datasets: [
-            {
-              label: "Submissions",
-              data: counts,
-              borderColor: "#004c97",
-              backgroundColor: "rgba(0,76,151,0.2)",
-              fill: true,
-              tension: 0.2,
-            },
-          ],
-        },
-       
+    function renderTimelineChart(days, counts
