@@ -73,7 +73,7 @@
 
     table {
       border-collapse: collapse;
-      margin: 0 auto 30px auto;
+      margin: 0 auto 10px auto;
       max-width: 900px;
       width: 100%;
       background: white;
@@ -99,6 +99,15 @@
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 0 5px #aaa;
+    }
+
+    #totalSubmissions {
+      max-width: 900px;
+      margin: 0 auto 30px auto;
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #333;
+      text-align: right;
     }
 
     footer {
@@ -143,12 +152,15 @@
         <th>Rank</th>
         <th>Data Collector</th>
         <th>Submissions</th>
+        <th>Sector(s)</th>
       </tr>
     </thead>
     <tbody id="collectorTableBody">
       <!-- Filled by JavaScript -->
     </tbody>
   </table>
+
+  <div id="totalSubmissions">Total submissions: 0</div>
 
   <h2 style="text-align:center;">Submissions Timeline (Last 30 days)</h2>
   <canvas id="timelineChart" height="150"></canvas>
@@ -262,32 +274,45 @@
       document.getElementById("othersBar").style.width = percentages["Others"] + "%";
     }
 
-    // Compute top data collectors by number of submissions
+    // Compute top data collectors by number of submissions and their sectors
     function computeTopCollectors(data) {
       const counts = {};
+      const sectorsPerCollector = {};
+
       data.forEach((item) => {
         const c = item.collector || "Unknown";
         counts[c] = (counts[c] || 0) + 1;
+
+        const sector = item.sector || "Others";
+        if (!sectorsPerCollector[c]) {
+          sectorsPerCollector[c] = new Set();
+        }
+        sectorsPerCollector[c].add(sector);
       });
 
-      // Convert to array and sort descending
+      // Convert counts object to array and sort descending
       const sorted = Object.entries(counts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
 
-      return sorted; // [ [collector, count], ... ]
+      // Map sorted to include sectors string
+      return sorted.map(([collector, count]) => {
+        const sectors = Array.from(sectorsPerCollector[collector]).join(", ");
+        return { collector, count, sectors };
+      });
     }
 
     // Render collector leaderboard table
     function renderCollectorTable(topCollectors) {
       const tbody = document.getElementById("collectorTableBody");
       tbody.innerHTML = "";
-      topCollectors.forEach(([collector, count], index) => {
+      topCollectors.forEach(({ collector, count, sectors }, index) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td>${collector}</td>
           <td>${count}</td>
+          <td>${sectors}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -382,6 +407,9 @@
         const topCollectors = computeTopCollectors(data);
         renderCollectorTable(topCollectors);
 
+        // Show total submissions below the collectors table
+        document.getElementById("totalSubmissions").innerText = `Total submissions: ${data.length}`;
+
         // Timeline chart
         const { days, counts } = prepareTimelineData(data);
         renderTimelineChart(days, counts);
@@ -403,3 +431,4 @@
   </script>
 </body>
 </html>
+
